@@ -5,8 +5,8 @@ package hu.bme.mit.spaceship;
 */
 public class GT4500 implements SpaceShip {
 
-  private TorpedoStore primaryTorpedoStore;
-  private TorpedoStore secondaryTorpedoStore;
+  private final TorpedoStore primaryTorpedoStore;
+  private final TorpedoStore secondaryTorpedoStore;
 
   private boolean wasPrimaryFiredLast = false;
 
@@ -15,8 +15,9 @@ public class GT4500 implements SpaceShip {
     this.secondaryTorpedoStore = new TorpedoStore(10);
   }
 
+  @Override
   public boolean fireLaser(FiringMode firingMode) {
-    // TODO not implemented yet
+   
     return false;
   }
 
@@ -33,14 +34,10 @@ public class GT4500 implements SpaceShip {
   *
   * @return whether at least one torpedo was fired successfully
   */
-  @Override
-  public boolean fireTorpedo(FiringMode firingMode) {
 
-    boolean firingSuccess = false;
-
-    switch (firingMode) {
-      case SINGLE:
-        if (wasPrimaryFiredLast) {
+  private boolean singlefire() {
+      boolean firingSuccess = false;
+      if (wasPrimaryFiredLast) {
           // try to fire the secondary first
           if (! secondaryTorpedoStore.isEmpty()) {
             firingSuccess = secondaryTorpedoStore.fire(1);
@@ -74,22 +71,31 @@ public class GT4500 implements SpaceShip {
             // if both of the stores are empty, nothing can be done, return failure
           }
         }
-        break;
+        return firingSuccess;
+  }
 
-      case ALL:
-        // try to fire both of the torpedo stores
-        boolean primarySuccess = false;
-        boolean secondarySuccess = false;
+  @Override
+  public boolean fireTorpedo(FiringMode firingMode) {
 
-        if (! primaryTorpedoStore.isEmpty()) {
-          primarySuccess = primaryTorpedoStore.fire(1);
-        }
-        if (! secondaryTorpedoStore.isEmpty()) {
-          secondarySuccess = secondaryTorpedoStore.fire(1);
-        }
+    boolean firingSuccess = false;
 
-        firingSuccess = primarySuccess || secondarySuccess;
-        break;
+    switch (firingMode) {
+      case SINGLE -> firingSuccess = singlefire();
+
+      case ALL -> {
+          // try to fire both of the torpedo stores
+          boolean primarySuccess = false;
+          boolean secondarySuccess = false;
+          
+          if (! primaryTorpedoStore.isEmpty()) {
+              primarySuccess = primaryTorpedoStore.fire(1);
+          }
+          if (! secondaryTorpedoStore.isEmpty()) {
+              secondarySuccess = secondaryTorpedoStore.fire(1);
+          }
+          
+          firingSuccess = primarySuccess || secondarySuccess;
+          }
     }
 
     return firingSuccess;
